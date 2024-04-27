@@ -1,0 +1,34 @@
+{
+  "name": "leaflet-color-legend",
+  "bin": {
+    "leaflet-color-legend": "./src/leaflet-color-legend.js"
+  },
+  "version": "1.0.0",
+  "type": "module",
+  "description": "A simple plugin to add a color legend to leaflet maps (e.g. for simple choropleth maps)",
+  "main": "./src/leaflet-color-legend.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Julius314/leaflet-color-legend.git"
+  },
+  "keywords": [
+    "leaflet",
+    "color",
+    "legend"
+  ],
+  "author": "Julius Rauscher",
+  "license": "ISC",
+  "dependencies": {
+    "leaflet": "^1.7.1",
+    "d3-selection": "^3.0.0",
+    "d3-scale": "^4.0.2"
+  },
+  "bugs": {
+    "url": "https://github.com/Julius314/leaflet-color-legend/issues"
+  },
+  "homepage": "https://github.com/Julius314/leaflet-color-legend#readme",
+  "devDependencies": {}
+}
