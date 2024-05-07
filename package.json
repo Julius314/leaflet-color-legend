@@ -1,6 +1,6 @@
 {
   "name": "leaflet-d3-color-legend",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "type": "module",
   "description": "A simple plugin to add a color legend using d3 to leaflet maps (e.g. for simple choropleth maps)",
   "main": "./src/leaflet-d3-color-legend.js",
