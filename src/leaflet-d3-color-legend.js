@@ -1,3 +1,20 @@
+(function (factory) {
+    // define an AMD module that relies on 'leaflet' and d3
+    if (typeof define === "function" && define.amd) {
+        define(["leaflet", "d3"], factory);
+
+    // define a CommonJS module that relies on 'leaflet' and d3
+    } else if (typeof module === "object" && typeof module.exports === "object") {
+        const L = require("leaflet");
+        const d3 = require("d3");
+        module.exports = factory(L, d3);
+    }
+
+    // attach your plugin to the global 'L' and 'd3' variable
+    if (typeof window !== "undefined" && window.L && typeof window.d3 !== "undefined") {
+        factory(window.L, window.d3);
+    }
+})(function(L, d3) {
 
 L.Control.ColorLegend = L.Control.extend({
 
@@ -93,5 +110,6 @@ L.Control.ColorLegend = L.Control.extend({
     onAdd: function () {
         return this._univariate(this.options.colorScale, this.options.label)
     }
-
 })
+
+});

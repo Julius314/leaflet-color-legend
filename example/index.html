@@ -16,11 +16,11 @@
 
 <div id="map"></div>
 
-<!-- Leaflet JavaScript -->
+<!-- Leaflet and d3 -->
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
 
-<!-- Your package JavaScript -->
+<!-- import d3 color legend -->
 <script src="../src/leaflet-d3-color-legend.js"></script>
 
 
@@ -33,11 +33,6 @@
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
   }).addTo(map);
 
-
-  var data = [];
-  for (var i = 0; i < 100; i++) {
-    data.push(Math.random());
-  }
 
   var cScale = d3.scaleSequential([0, 100], d3.interpolateBlues);
 
