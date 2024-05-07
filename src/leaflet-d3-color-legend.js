@@ -44,9 +44,11 @@ L.Control.ColorLegend = L.Control.extend({
         let textG = svg.append('g')
             .attr("transform", "translate(" + size.padX + ", " + (size.padY + size.height) + ")");
 
+        let defsid = "colorLegend"+String(Math.random());
+
         const gradient = svg.append("defs")
             .append("linearGradient")
-            .attr("id", "colorLegend")
+            .attr("id", defsid)
             .attr("x1", "0%")
             .attr("y1", "0%")
             .attr("x2", "100%")
@@ -92,7 +94,7 @@ L.Control.ColorLegend = L.Control.extend({
         gradG.append("rect")
             .attr("width", size.width)
             .attr("height", size.height)
-            .style("fill", "url(#colorLegend)");
+            .style("fill", "url(#"+defsid+")");
 
         textG.append("text")
             .attr("x", size.width * .5)

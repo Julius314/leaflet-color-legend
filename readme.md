@@ -24,4 +24,5 @@ var legend = new L.Control.ColorLegend({
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | position | String | 'topright' | Inherited from `L.Control` |
-| colorScale | d3.scaleSequential | - | The colorScale from d3. Currently, only continuous scales generated with `scaleSequential` are supported. | 
+| colorScale | a d3 scale | - | The colorScale from d3. It should accept a number or string as input and return a color. |
+| label | String | '' | A label that is placed under the colormap |

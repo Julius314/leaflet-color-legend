@@ -34,15 +34,34 @@
   }).addTo(map);
 
 
-  var cScale = d3.scaleSequential([0, 100], d3.interpolateBlues);
+  var data = Array.from({length: 100}, () => Math.floor(Math.random() * 101));;
+  var scales = [];
 
-  // Create and add your custom control to the map
-  var legend = new L.Control.ColorLegend({
-    position: "topright",
-    colorScale: cScale,
-    label: "Scale"
+  scales.push(d3.scaleLog()
+    .domain([1, d3.max(data)])
+    .range(['blue', 'red']));
+  
+  scales.push(d3.scaleQuantize()
+    .domain([0, d3.max(data)])
+    .range(['blue', 'green', 'yellow', 'red']))
+  
+  scales.push(d3.scaleThreshold()
+    .domain([10,20,30])
+    .range(['blue', 'green', 'yellow', 'red']))
+
+  scales.push(d3.scaleSequential(d3.extent(data), d3.interpolateBlues));
+
+
+  scales.forEach(cScale => {
+    // Create and add your custom control to the map
+    var legend = new L.Control.ColorLegend({
+      position: "topleft",
+      colorScale: cScale,
+      label: "Scale"
+    });
+    legend.addTo(map);    
   });
-  legend.addTo(map);
+
 </script>
 
 </body>

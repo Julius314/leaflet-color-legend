@@ -1,14 +1,23 @@
 import * as d3 from "d3";
 import * as L from "leaflet";
 
-interface ColorLegendOptions extends L.ControlOptions {
-    colorScale?: d3.ScaleSequential<any, any>,
+
+type D3Scale = d3.ScaleLinear<number|string, string> |
+               d3.ScaleQuantize<number|string> |
+               d3.ScaleThreshold<number|string, string> |
+               d3.ScaleLogarithmic<number|string, string> |
+               d3.ScaleSequential<string>;
+
+export interface ColorLegendOptions extends L.ControlOptions {
+    colorScale?: D3Scale,
     label: string
 }
 
-export declare class LeafletLegend extends L.Control {
-    private options?;
+declare class ColorLegend extends L.Control {
+    options: ColorLegendOptions;
     constructor(options?: ColorLegendOptions);
     onAdd(map: L.Map): HTMLElement;
-    univariate(scale: d3.ScaleSequential<any, any>, label: string): HTMLElement;
+    _univariate(scale: D3Scale, label: string): HTMLElement;
 }
+
+export default ColorLegend;
