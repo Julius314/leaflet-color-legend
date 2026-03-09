@@ -115,3 +115,7 @@ L.Control.ColorLegend = L.Control.extend({
 })
 
 });
+
+L.control.colorLegend = function (options) {
+	return new L.Control.ColorLegend(options)
+};
