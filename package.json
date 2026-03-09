@@ -1,15 +1,15 @@
 {
   "name": "leaflet-d3-color-legend",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "type": "module",
   "description": "A simple plugin to add a color legend using d3 to leaflet maps (e.g. for simple choropleth maps)",
   "main": "dist/index.umd.js",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.umd.js"
+    "types": "./dist/index.d.ts",
+    "import": "./dist/index.js",
+    "require": "./dist/index.umd.js"
   },
   "files": [
     "dist"
