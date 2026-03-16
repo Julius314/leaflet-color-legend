@@ -1,88 +1,15 @@
+import * as d3$1 from "d3";
 import * as d3 from "d3";
+import * as L$3 from "leaflet";
+import * as L$2 from "leaflet";
+import * as L$1 from "leaflet";
 import * as L from "leaflet";
 
-//#region dist/.tsdown-types-es/leaflet-d3-color-legend.d.ts
-/**
-
-* Supported scales (Continuous - rendered as gradient):
-
-* - ScaleSequential: continuous to continuous interpolation
-
-* - ScaleLinear: continuous domain to string range mapping
-
-* - ScaleLog: logarithmic scale
-
-* - ScaleSymlog: symmetric logarithmic scale
-
-* - ScalePow: power scale (sqrt, cbrt, etc)
-
-* 
-
-* Supported scales (Discrete - rendered as color blocks):
-
-* - ScaleQuantize: continuous domain to discrete color range
-
-* - ScaleQuantile: data-driven quantile discretization
-
-* - ScaleThreshold: discrete thresholds mapping
-
-* 
-
-* Not supported:
-
-* - Ordinal/Band/Point scales (discrete domain, no natural gradient)
-
-*/
-/**
-
-* Supported scales (Continuous - rendered as gradient):
-
-* - ScaleSequential: continuous to continuous interpolation
-
-* - ScaleLinear: continuous domain to string range mapping
-
-* - ScaleLog: logarithmic scale
-
-* - ScaleSymlog: symmetric logarithmic scale
-
-* - ScalePow: power scale (sqrt, cbrt, etc)
-
-* 
-
-* Supported scales (Discrete - rendered as color blocks):
-
-* - ScaleQuantize: continuous domain to discrete color range
-
-* - ScaleQuantile: data-driven quantile discretization
-
-* - ScaleThreshold: discrete thresholds mapping
-
-* 
-
-* Not supported:
-
-* - Ordinal/Band/Point scales (discrete domain, no natural gradient)
-
-*/
-type ContinuousScale = d3.ScaleSequential<string> | d3.ScaleLinear<string, any> | d3.ScaleSymLog<string, any> | d3.ScalePower<string, any>;
-/**
-	
-	* inherited from L.Control
-	
-	*/
-type DiscreteScale = d3.ScaleQuantize<string> | d3.ScaleQuantile<string> | d3.ScaleThreshold<number, string>;
-/**
-	
-	* inherited from L.Control
-	
-	*/
+//#region dist/.tsdown-types-es/legend/base.d.ts
+type ContinuousScale = d3$1.ScaleSequential<string> | d3$1.ScaleLinear<string, any> | d3$1.ScaleSymLog<string, any> | d3$1.ScalePower<string, any>;
+type DiscreteScale = d3$1.ScaleQuantize<string> | d3$1.ScaleQuantile<string> | d3$1.ScaleThreshold<number, string>;
 type SupportedScale = ContinuousScale | DiscreteScale;
-/**
-	
-	* inherited from L.Control
-	
-	*/
-interface LegendOptions extends L.ControlOptions {
+interface LegendOptions extends L$3.ControlOptions {
 	scale?: SupportedScale;
 	interpolator?: (t: number) => string;
 	label?: string;
@@ -90,30 +17,28 @@ interface LegendOptions extends L.ControlOptions {
 	width?: number;
 	height?: number;
 }
+
+//#endregion
+//#region dist/.tsdown-types-es/legend/univariate.d.ts
 /**
-	
-	* inherited from L.Control
-	
-	*/
-declare class LeafletLegend extends L.Control {
-	private scale;
-	private data?;
-	private indicatorG?;
-	private label;
-	private labelG?;
-	private currentSize?;
+
+* Basic single‑value legend with optional indicator and label
+
+*/
+/**
+
+* Basic single‑value legend with optional indicator and label
+
+*/
+declare class UnivariateLegend extends L$2.Control {
+	protected scale: SupportedScale;
+	protected data?: number[];
+	protected indicatorG?: d3.Selection<SVGGElement, unknown, null, undefined>;
+	protected label: string;
+	protected labelG?: d3.Selection<SVGGElement, unknown, null, undefined>;
+	protected currentSize?: any;
 	constructor(dataOrScale: number[] | SupportedScale, options?: LegendOptions);
-	/**
-	
-	* inherited from L.Control
-	
-	*/
-	onAdd(map: L.Map): HTMLElement;
-	/**
-	
-	* Returns the HTML containing the SVG.
-	
-	*/
+	onAdd(map: L$2.Map): HTMLElement;
 	getHTML(): HTMLElement;
 	/**
 	
@@ -126,49 +51,36 @@ declare class LeafletLegend extends L.Control {
 		val: number
 		label: string
 	} | null): void;
-	private createSequentialScale;
-	/**
-	
-	* checks if the passed scale is a discrete or continuous scale
-	
-	*/
-	private isDiscreteScale;
-	/**
-	
-	* creates the svg for a univariate colorscale.
-	
-	*/
 	private univariate;
-	/**
-	
-	* renders the continuous colorscale.
-	
-	*/
 	private renderContinuousScale;
-	/**
-	
-	* renders the discrete colorscale.
-	
-	*/
 	private renderDiscreteScale;
-	/**
-	
-	* returns the colorscale.
-	
-	*/
 	get colorScale(): SupportedScale;
 }
-/**
-
-* export of factory function
-
-*/
-/**
-
-* export of factory function
-
-*/
-declare function colorLegend(dataOrScale: number[] | SupportedScale, options?: LegendOptions): LeafletLegend;
+declare function colorLegend(dataOrScale: number[] | SupportedScale, options?: LegendOptions): UnivariateLegend;
 
 //#endregion
-export { LeafletLegend, colorLegend };
+//#region dist/.tsdown-types-es/legend/bivariate.d.ts
+interface BivariateOptions extends LegendOptions {
+	scaleX?: SupportedScale;
+	scaleY?: SupportedScale;
+	interpolator?: (u: number, v: number) => string;
+	width?: number;
+	height?: number;
+}
+declare class BivariateLegend extends L$1.Control {
+	constructor(options?: BivariateOptions);
+	onAdd(map: L$1.Map): HTMLElement;
+}
+
+//#endregion
+//#region dist/.tsdown-types-es/legend/categorical.d.ts
+interface CategoricalOptions extends LegendOptions {
+	categories?: string[];
+}
+declare class CategoricalLegend extends L.Control {
+	constructor(options?: CategoricalOptions);
+	onAdd(map: L.Map): HTMLElement;
+}
+
+//#endregion
+export { BivariateLegend, CategoricalLegend, UnivariateLegend as LeafletLegend, UnivariateLegend, colorLegend };
