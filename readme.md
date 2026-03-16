@@ -102,6 +102,6 @@ fetch("https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geo
 | position | String | 'topright' | Inherited from `L.Control` |
 | interpolator | (t: number) => string | [interpolatePlasma](https://d3js.org/d3-scale-chromatic/sequential#interpolatePlasma) | Interpolator used for the colorscale from [d3 Sequential Schemes](https://d3js.org/d3-scale-chromatic/sequential) |
 | nTicks | number | 4 | How many ticks shall be drawn |
-| label | String | '' | A label that is placed under the colormap |
+| label | String | "" | A label that is placed above the colormap |
 | width | number | 100 | width of the legend |
 | width | number | 40 | width of the legend |
