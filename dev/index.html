@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>leaflet-color-legend · dev</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+<body style="height: 100vh;display: flex;margin:0">
+  <div id="map" style="flex: 1"></div>
+
+<!-- importmap: resolve bare specifiers to CDN ESM builds -->
+<script type="importmap">
+{
+  "imports": {
+    "d3":      "https://cdn.jsdelivr.net/npm/d3@7/+esm",
+    "leaflet": "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet-src.esm.js"
+  }
+}
+</script>
+
+<!-- Test code -->
+<script type="module">
+import * as L   from 'leaflet';
+import * as d3  from 'd3';
+import { LeafletLegend } from '/dist/index.js';
+
+const map = L.map("map").setView([37.8, -96], 4);
+
+
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+  attribution: '&copy; OpenStreetMap &copy; CARTO',
+  maxZoom: 19
+}).addTo(map);
+// Fetch US states GeoJSON
+fetch("https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geojson/us-states.json")
+  .then(res => res.json())
+  .then(data => {
+    // Color based on a simple numeric property
+    const values = data.features.map((d) => d.properties.density || 0);
+    const colorScale = d3.scaleSequential()
+      .interpolator(d3.interpolatePlasma)
+      .domain([d3.quantile(values, 0.1), d3.quantile(values, 0.9)])
+      .clamp(true);
+
+    L.geoJSON(data, {
+      style: (feature) => ({
+        fillColor: colorScale(feature.properties.density),
+        weight: 1,
+        opacity: 1,
+        color: "white",
+        fillOpacity: 0.7
+      }),
+      onEachFeature: (feature, layer) => {
+        layer.on("mouseover", () => {
+          legend.setValue({ val: feature.properties.density, label: feature.properties.name });
+          layer.setStyle({color: "black", weight: 4 });
+          layer.bringToFront();
+        });
+        layer.on("mouseout", () => {
+          legend.setValue(null);
+          layer.setStyle({ color: "white", weight: 2 });
+        });
+      }
+    }).addTo(map);
+
+    const legend = new LeafletLegend(colorScale, {
+      position: "topright",
+      label: "Population density"
+    });
+    legend.addTo(map);
+  });
+
+</script>
+
+<!-- Live-reload via SSE (injected by dev server) -->
+<script>
+(function () {
+  const es = new EventSource('/__reload');
+  es.addEventListener('reload', () => {
+    document.getElementById('reload-badge').classList.add('show');
+    setTimeout(() => location.reload(), 200);
+  });
+  es.onerror = () => es.close();
+})();
+</script>
+
+</body>
+</html>

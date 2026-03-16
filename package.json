@@ -16,7 +16,8 @@
   ],
   "scripts": {
     "build": "tsdown",
-    "dev": "tsdown --watch"
+    "dev": "tsdown --watch",
+    "dev:serve": "node dev/serve.mjs"
   },
   "repository": {
     "type": "git",
