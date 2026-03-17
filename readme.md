@@ -89,9 +89,9 @@ fetch("https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geo
   });
 ```
 
-![Example Image](./example/example.png)
+![Example Image](./docs/example.png)
 
-![Example Image](./example/example_value.png)
+![Example Image](./docs/example_value.png)
 
 
 
