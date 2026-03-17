@@ -1,8 +1,5 @@
-import * as d3$1 from "d3";
-import * as d3 from "d3";
-import * as L$2 from "leaflet";
-import * as L$1 from "leaflet";
-import * as L from "leaflet";
+import { color, extent, hsl, interpolatePlasma, range, scaleSequential, select, tickFormat } from "d3";
+import { Control, DomUtil } from "leaflet";
 
 //#region src/legend/base.ts
 function isDiscreteScale(scale) {
@@ -13,8 +10,8 @@ function isDiscreteScale(scale) {
 	return false;
 }
 function createSequentialScale(data, interpolator) {
-	const extent = d3$1.extent(data);
-	return d3$1.scaleSequential(interpolator).domain(extent);
+	const ext = extent(data);
+	return new scaleSequential(interpolator).domain(ext);
 }
 
 //#endregion
@@ -24,7 +21,7 @@ function createSequentialScale(data, interpolator) {
 * Basic single‑value legend with optional indicator and label
 
 */
-var UnivariateLegend = class extends L$2.Control {
+var UnivariateLegend = class extends Control {
 	scale;
 	data;
 	indicatorG;
@@ -36,7 +33,7 @@ var UnivariateLegend = class extends L$2.Control {
 		if (typeof dataOrScale === "function") this.scale = dataOrScale;
 		else {
 			this.data = dataOrScale;
-			this.scale = createSequentialScale(dataOrScale, options?.interpolator ?? d3.interpolatePlasma);
+			this.scale = createSequentialScale(dataOrScale, options?.interpolator ?? interpolatePlasma);
 		}
 	}
 	onAdd(map) {
@@ -64,16 +61,16 @@ var UnivariateLegend = class extends L$2.Control {
 		const clamped = Math.max(d0, Math.min(d1, value.val));
 		const t = (clamped - d0) / (d1 - d0);
 		const x = t * size.width;
-		const color = this.scale(clamped);
-		const rgb = d3.color(color);
-		const outline = rgb ? d3.hsl(rgb).l > .5 ? "#333" : "#eee" : "#333";
+		const color$1 = this.scale(clamped);
+		const rgb = color(color$1);
+		const outline = rgb ? hsl(rgb).l > .5 ? "#333" : "#eee" : "#333";
 		const r = size.gradHeight * .25;
 		this.indicatorG.append("line").attr("x1", x).attr("x2", x).attr("y1", -size.gradHeight).attr("y2", -size.gradHeight * .25).attr("stroke", outline).attr("stroke-width", 1.5).attr("stroke-dasharray", "2,2");
-		this.indicatorG.append("circle").attr("cx", x).attr("cy", -size.gradHeight * .5).attr("r", r).attr("fill", color).attr("stroke", outline).attr("stroke-width", 1.5);
+		this.indicatorG.append("circle").attr("cx", x).attr("cy", -size.gradHeight * .5).attr("r", r).attr("fill", color$1).attr("stroke", outline).attr("stroke-width", 1.5);
 		this.labelG?.select("text.label").text((value.label ? value.label : this.label) + ": " + value.val.toLocaleString());
 	}
 	univariate(scale, options) {
-		const div = L$2.DomUtil.create("div", "leaflet-control-layers");
+		const div = DomUtil.create("div", "leaflet-control-layers");
 		const nTicks = options.nTicks || 4;
 		const width = options.width || 100;
 		const height = options.height || 40;
@@ -86,7 +83,7 @@ var UnivariateLegend = class extends L$2.Control {
 			padY: 2
 		};
 		this.currentSize = size;
-		const svg = d3.select(div).append("svg").attr("width", size.width + 2 * size.padX).attr("height", size.gradHeight + size.ticksHeight + size.gradOffset + 2 * size.padY);
+		const svg = select(div).append("svg").attr("width", size.width + 2 * size.padX).attr("height", size.gradHeight + size.ticksHeight + size.gradOffset + 2 * size.padY);
 		if (options.label) {
 			this.label = options.label;
 			this.labelG = svg.append("g");
@@ -105,7 +102,7 @@ var UnivariateLegend = class extends L$2.Control {
 		let gradientId = "color-grad-" + Date.now().toString(36) + Math.random().toString(36).substring(2, 12).padStart(12, "0");
 		const gradient = svg.append("defs").append("linearGradient").attr("id", gradientId).attr("x1", "0%").attr("y1", "0%").attr("x2", "100%").attr("y2", "0%");
 		gradG.append("rect").attr("width", size.width).attr("height", size.gradHeight).style("fill", `url(#${gradientId})`);
-		const samples = d3.range(nTicks).map((i) => {
+		const samples = range(nTicks).map((i) => {
 			const t = i / (nTicks - 1);
 			const value = d0 + t * (d1 - d0);
 			return {
@@ -114,7 +111,7 @@ var UnivariateLegend = class extends L$2.Control {
 				color: scale(value)
 			};
 		});
-		const format = d3.tickFormat(d0, d1, nTicks - 1);
+		const format = tickFormat(d0, d1, nTicks - 1);
 		ticksG.append("line").attr("x1", 0).attr("x2", size.width).attr("y1", 0).attr("y2", 0).attr("stroke", "black");
 		for (const s of samples) {
 			gradient.append("stop").attr("offset", `${s.offset}%`).style("stop-color", s.color);
@@ -125,18 +122,18 @@ var UnivariateLegend = class extends L$2.Control {
 	renderDiscreteScale(scale, gradG, ticksG, size, d0, d1, nTicks) {
 		const colors = scale.range();
 		const numColors = colors.length;
-		const format = d3.tickFormat(d0, d1, nTicks - 1);
+		const format = tickFormat(d0, d1, nTicks - 1);
 		const blockWidth = size.width / numColors;
 		const skipLabels = Math.max(1, Math.floor(numColors / nTicks));
-		colors.forEach((color, i) => {
+		colors.forEach((color$1, i) => {
 			let x = i * blockWidth;
-			const ext = scale.invertExtent(color);
+			const ext = scale.invertExtent(color$1);
 			ticksG.append("line").attr("x1", x).attr("x2", x).attr("y1", 0).attr("y2", size.ticksHeight * .3).attr("stroke", "black");
 			if (i % skipLabels == 0) {
 				const label = ext[0];
 				ticksG.append("text").attr("x", x).attr("y", size.ticksHeight * .5).style("dominant-baseline", "hanging").style("text-anchor", "middle").style("font-size", Math.max(7, size.ticksHeight * .9)).text(format(label));
 			}
-			gradG.append("rect").attr("x", x).attr("width", blockWidth).attr("height", size.gradHeight).style("fill", color).style("stroke", "#999").style("stroke-opacity", .3).style("stroke-width", "1px");
+			gradG.append("rect").attr("x", x).attr("width", blockWidth).attr("height", size.gradHeight).style("fill", color$1).style("stroke", "#999").style("stroke-opacity", .3).style("stroke-width", "1px");
 		});
 		ticksG.append("line").attr("x1", 0).attr("x2", size.width).attr("y1", 0).attr("y2", 0).attr("stroke", "black");
 		ticksG.append("line").attr("x1", size.width).attr("x2", size.width).attr("y1", 0).attr("y2", size.ticksHeight * .3).attr("stroke", "black");
@@ -152,24 +149,24 @@ function colorLegend(dataOrScale, options) {
 
 //#endregion
 //#region src/legend/bivariate.ts
-var BivariateLegend = class extends L$1.Control {
+var BivariateLegend = class extends Control {
 	constructor(options) {
 		super(options);
 	}
 	onAdd(map) {
-		const div = L$1.DomUtil.create("div", "leaflet-control-layers");
+		const div = DomUtil.create("div", "leaflet-control-layers");
 		return div;
 	}
 };
 
 //#endregion
 //#region src/legend/categorical.ts
-var CategoricalLegend = class extends L.Control {
+var CategoricalLegend = class extends Control {
 	constructor(options) {
 		super(options);
 	}
 	onAdd(map) {
-		const div = L.DomUtil.create("div", "leaflet-control-layers");
+		const div = DomUtil.create("div", "leaflet-control-layers");
 		return div;
 	}
 };

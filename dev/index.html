@@ -77,7 +77,7 @@ fetch("https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geo
 (function () {
   const es = new EventSource('/__reload');
   es.addEventListener('reload', () => {
-    document.getElementById('reload-badge').classList.add('show');
+    //document.getElementById('reload-badge').classList.add('show');
     setTimeout(() => location.reload(), 200);
   });
   es.onerror = () => es.close();

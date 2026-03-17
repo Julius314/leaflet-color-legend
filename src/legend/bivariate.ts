@@ -1,5 +1,4 @@
-import * as d3 from "d3";
-import * as L from "leaflet";
+import { Control, DomUtil, Map } from "leaflet";
 import { LegendOptions, SupportedScale } from "./base";
 
 export interface BivariateOptions extends LegendOptions {
@@ -10,14 +9,14 @@ export interface BivariateOptions extends LegendOptions {
   height?: number;
 }
 
-export class BivariateLegend extends L.Control {
+export class BivariateLegend extends Control {
   // placeholder for future implementation
   constructor(options?: BivariateOptions) {
     super(options);
   }
 
-  override onAdd(map: L.Map): HTMLElement {
-    const div = L.DomUtil.create("div", "leaflet-control-layers") as HTMLElement;
+  override onAdd(map: Map): HTMLElement {
+    const div = DomUtil.create("div", "leaflet-control-layers") as HTMLElement;
     // TODO render 2D color square
     return div;
   }

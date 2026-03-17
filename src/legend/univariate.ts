@@ -1,5 +1,5 @@
-import * as d3 from "d3";
-import * as L from "leaflet";
+import { select, Selection, range, color as d3color, interpolatePlasma, hsl, tickFormat } from "d3";
+import { Control, DomUtil, Map } from "leaflet";
 import {
   SupportedScale,
   LegendOptions,
@@ -10,12 +10,12 @@ import {
 /**
  * Basic single‑value legend with optional indicator and label
  */
-export class UnivariateLegend extends L.Control {
+export class UnivariateLegend extends Control {
   protected scale!: SupportedScale;
   protected data?: number[];
-  protected indicatorG?: d3.Selection<SVGGElement, unknown, null, undefined>;
+  protected indicatorG?: Selection<SVGGElement, unknown, null, undefined>;
   protected label: string = "";
-  protected labelG?: d3.Selection<SVGGElement, unknown, null, undefined>;
+  protected labelG?: Selection<SVGGElement, unknown, null, undefined>;
   protected currentSize?: any;
 
   constructor(
@@ -30,13 +30,13 @@ export class UnivariateLegend extends L.Control {
       this.data = dataOrScale;
       this.scale = createSequentialScale(
         dataOrScale,
-        options?.interpolator ?? d3.interpolatePlasma
+        options?.interpolator ?? interpolatePlasma
       );
     }
   }
 
   /* inherited from L.Control */
-  override onAdd(map: L.Map): HTMLElement {
+  override onAdd(map: Map): HTMLElement {
     return this.univariate(this.scale, this.options);
   }
 
@@ -69,9 +69,9 @@ export class UnivariateLegend extends L.Control {
     const color = (this.scale as any)(clamped) as string;
 
     // Determine contrasting outline color
-    const rgb = d3.color(color);
+    const rgb = d3color(color);
     const outline = rgb
-      ? d3.hsl(rgb).l > 0.5
+      ? hsl(rgb).l > 0.5
         ? "#333"
         : "#eee"
       : "#333";
@@ -109,7 +109,7 @@ export class UnivariateLegend extends L.Control {
     scale: SupportedScale,
     options: LegendOptions
   ): HTMLElement {
-    const div = L.DomUtil.create("div", "leaflet-control-layers") as HTMLElement;
+    const div = DomUtil.create("div", "leaflet-control-layers") as HTMLElement;
 
     const nTicks = options.nTicks || 4;
     const width = options.width || 100;
@@ -126,8 +126,7 @@ export class UnivariateLegend extends L.Control {
 
     this.currentSize = size;
 
-    const svg = d3
-      .select(div)
+    const svg = select(div)
       .append("svg")
       .attr("width", size.width + 2 * size.padX)
       .attr("height",
@@ -178,9 +177,9 @@ export class UnivariateLegend extends L.Control {
 
   private renderContinuousScale(
     scale: SupportedScale,
-    svg: d3.Selection<any, any, any, any>,
-    gradG: d3.Selection<any, any, any, any>,
-    ticksG: d3.Selection<any, any, any, any>,
+    svg: Selection<any, any, any, any>,
+    gradG: Selection<any, any, any, any>,
+    ticksG: Selection<any, any, any, any>,
     size: any,
     d0: number,
     d1: number,
@@ -200,13 +199,13 @@ export class UnivariateLegend extends L.Control {
       .attr("height", size.gradHeight)
       .style("fill", `url(#${gradientId})`);
 
-    const samples = d3.range(nTicks).map((i: number) => {
+    const samples = range(nTicks).map((i: number) => {
       const t = i / (nTicks - 1);
       const value = d0 + t * (d1 - d0);
       return { offset: t * 100, value, color: (scale as any)(value) };
     });
 
-    const format = d3.tickFormat(d0, d1, nTicks - 1);
+    const format = tickFormat(d0, d1, nTicks - 1);
     ticksG.append("line")
       .attr("x1", 0)
       .attr("x2", size.width)
@@ -238,8 +237,8 @@ export class UnivariateLegend extends L.Control {
 
   private renderDiscreteScale(
     scale: SupportedScale,
-    gradG: d3.Selection<any, any, any, any>,
-    ticksG: d3.Selection<any, any, any, any>,
+    gradG: Selection<any, any, any, any>,
+    ticksG: Selection<any, any, any, any>,
     size: any,
     d0: number,
     d1: number,
@@ -247,7 +246,7 @@ export class UnivariateLegend extends L.Control {
   ): void {
     const colors = (scale as any).range();
     const numColors = colors.length;
-    const format = d3.tickFormat(d0, d1, nTicks - 1);
+    const format = tickFormat(d0, d1, nTicks - 1);
 
     const blockWidth = size.width / numColors;
 

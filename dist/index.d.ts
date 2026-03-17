@@ -1,15 +1,11 @@
-import * as d3$1 from "d3";
-import * as d3 from "d3";
-import * as L$3 from "leaflet";
-import * as L$2 from "leaflet";
-import * as L$1 from "leaflet";
-import * as L from "leaflet";
+import { ScaleLinear, ScalePower, ScaleQuantile, ScaleQuantize, ScaleSequential, ScaleSymLog, ScaleThreshold, Selection } from "d3";
+import { Control, ControlOptions, Map } from "leaflet";
 
 //#region dist/.tsdown-types-es/legend/base.d.ts
-type ContinuousScale = d3$1.ScaleSequential<string> | d3$1.ScaleLinear<string, any> | d3$1.ScaleSymLog<string, any> | d3$1.ScalePower<string, any>;
-type DiscreteScale = d3$1.ScaleQuantize<string> | d3$1.ScaleQuantile<string> | d3$1.ScaleThreshold<number, string>;
+type ContinuousScale = ScaleSequential<string> | ScaleLinear<string, any> | ScaleSymLog<string, any> | ScalePower<string, any>;
+type DiscreteScale = ScaleQuantize<string> | ScaleQuantile<string> | ScaleThreshold<number, string>;
 type SupportedScale = ContinuousScale | DiscreteScale;
-interface LegendOptions extends L$3.ControlOptions {
+interface LegendOptions extends ControlOptions {
 	scale?: SupportedScale;
 	interpolator?: (t: number) => string;
 	label?: string;
@@ -30,15 +26,15 @@ interface LegendOptions extends L$3.ControlOptions {
 * Basic single‑value legend with optional indicator and label
 
 */
-declare class UnivariateLegend extends L$2.Control {
+declare class UnivariateLegend extends Control {
 	protected scale: SupportedScale;
 	protected data?: number[];
-	protected indicatorG?: d3.Selection<SVGGElement, unknown, null, undefined>;
+	protected indicatorG?: Selection<SVGGElement, unknown, null, undefined>;
 	protected label: string;
-	protected labelG?: d3.Selection<SVGGElement, unknown, null, undefined>;
+	protected labelG?: Selection<SVGGElement, unknown, null, undefined>;
 	protected currentSize?: any;
 	constructor(dataOrScale: number[] | SupportedScale, options?: LegendOptions);
-	onAdd(map: L$2.Map): HTMLElement;
+	onAdd(map: Map): HTMLElement;
 	getHTML(): HTMLElement;
 	/**
 	
@@ -67,9 +63,9 @@ interface BivariateOptions extends LegendOptions {
 	width?: number;
 	height?: number;
 }
-declare class BivariateLegend extends L$1.Control {
+declare class BivariateLegend extends Control {
 	constructor(options?: BivariateOptions);
-	onAdd(map: L$1.Map): HTMLElement;
+	onAdd(map: Map): HTMLElement;
 }
 
 //#endregion
@@ -77,9 +73,9 @@ declare class BivariateLegend extends L$1.Control {
 interface CategoricalOptions extends LegendOptions {
 	categories?: string[];
 }
-declare class CategoricalLegend extends L.Control {
+declare class CategoricalLegend extends Control {
 	constructor(options?: CategoricalOptions);
-	onAdd(map: L.Map): HTMLElement;
+	onAdd(map: Map): HTMLElement;
 }
 
 //#endregion

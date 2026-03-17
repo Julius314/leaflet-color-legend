@@ -1,20 +1,20 @@
-import * as d3 from "d3";
-import * as L from "leaflet";
+import {extent, scaleSequential, ScaleSequential, ScaleLinear, ScaleSymLog, ScalePower, ScaleQuantize, ScaleQuantile, ScaleThreshold } from "d3";
+import { ControlOptions } from "leaflet";
 
 export type ContinuousScale =
-  | d3.ScaleSequential<string>
-  | d3.ScaleLinear<string, any>
-  | d3.ScaleSymLog<string, any>
-  | d3.ScalePower<string, any>;
+  | ScaleSequential<string>
+  | ScaleLinear<string, any>
+  | ScaleSymLog<string, any>
+  | ScalePower<string, any>;
 
 export type DiscreteScale =
-  | d3.ScaleQuantize<string>
-  | d3.ScaleQuantile<string>
-  | d3.ScaleThreshold<number, string>;
+  | ScaleQuantize<string>
+  | ScaleQuantile<string>
+  | ScaleThreshold<number, string>;
 
 export type SupportedScale = ContinuousScale | DiscreteScale;
 
-export interface LegendOptions extends L.ControlOptions {
+export interface LegendOptions extends ControlOptions {
   scale?: SupportedScale;
   interpolator?: (t: number) => string;
   label?: string;
@@ -36,6 +36,6 @@ export function createSequentialScale(
   data: number[],
   interpolator: (t: number) => string
 ): SupportedScale {
-  const extent = d3.extent(data) as [number, number];
-  return d3.scaleSequential(interpolator).domain(extent);
+  const ext = extent(data) as [number, number];
+  return new scaleSequential(interpolator).domain(ext);
 }
