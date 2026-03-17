@@ -15,6 +15,49 @@ function createSequentialScale(data, interpolator) {
 }
 
 //#endregion
+//#region src/legend/utils.ts
+function makeScaleHelpers(scale) {
+	const domain = scale.domain();
+	const d0 = domain[0];
+	const d1 = domain[domain.length - 1];
+	const s = scale.copy();
+	if (typeof s.interpolator === "function") if (typeof s.invert === "function") {
+		s.interpolator((t) => t);
+		const normalize$1 = (v) => s(Math.max(d0, Math.min(d1, v)));
+		const invert$1 = (t) => s.invert(t);
+		return {
+			normalize: normalize$1,
+			invert: invert$1
+		};
+	} else {
+		const normalize$1 = (v) => (Math.max(d0, Math.min(d1, v)) - d0) / (d1 - d0);
+		const invert$1 = (t) => d0 + t * (d1 - d0);
+		return {
+			normalize: normalize$1,
+			invert: invert$1
+		};
+	}
+	if (typeof s.range === "function") {
+		s.range([0, 1]);
+		const normalize$1 = (v) => s(Math.max(d0, Math.min(d1, v)));
+		const invert$1 = (t) => s.invert(t);
+		return {
+			normalize: normalize$1,
+			invert: invert$1
+		};
+	}
+	const normalize = (v) => (v - d0) / (d1 - d0);
+	const invert = (t) => d0 + t * (d1 - d0);
+	return {
+		normalize,
+		invert
+	};
+}
+function makeNormalizer(scale) {
+	return makeScaleHelpers(scale).normalize;
+}
+
+//#endregion
 //#region src/legend/univariate.ts
 /**
 
@@ -30,6 +73,7 @@ var UnivariateLegend = class extends Control {
 	currentSize;
 	constructor(dataOrScale, options) {
 		super(options);
+		console.log("cnonst", options);
 		if (typeof dataOrScale === "function") this.scale = dataOrScale;
 		else {
 			this.data = dataOrScale;
@@ -57,10 +101,10 @@ var UnivariateLegend = class extends Control {
 			this.labelG?.select("text.label").text(this.label);
 			return;
 		}
-		const [d0, d1] = this.scale.domain();
+		const domain = this.scale.domain();
+		const d0 = domain[0], d1 = domain[domain.length - 1];
 		const clamped = Math.max(d0, Math.min(d1, value.val));
-		const t = (clamped - d0) / (d1 - d0);
-		const x = t * size.width;
+		const x = makeNormalizer(this.scale)(clamped) * size.width;
 		const color$1 = this.scale(clamped);
 		const rgb = color(color$1);
 		const outline = rgb ? hsl(rgb).l > .5 ? "#333" : "#eee" : "#333";
@@ -84,7 +128,9 @@ var UnivariateLegend = class extends Control {
 		};
 		this.currentSize = size;
 		const svg = select(div).append("svg").attr("width", size.width + 2 * size.padX).attr("height", size.gradHeight + size.ticksHeight + size.gradOffset + 2 * size.padY);
+		console.log("opt", options);
 		if (options.label) {
+			console.log("lab", options.label);
 			this.label = options.label;
 			this.labelG = svg.append("g");
 			this.labelG?.append("text").attr("class", "label").attr("x", size.padX).attr("dy", 1).attr("y", size.padY + size.gradOffset * .5).style("dominant-baseline", "central").style("text-anchor", "start").style("font-size", Math.min(10, size.gradOffset * .7)).style("font-weight", "bold").text(this.label);
@@ -102,21 +148,26 @@ var UnivariateLegend = class extends Control {
 		let gradientId = "color-grad-" + Date.now().toString(36) + Math.random().toString(36).substring(2, 12).padStart(12, "0");
 		const gradient = svg.append("defs").append("linearGradient").attr("id", gradientId).attr("x1", "0%").attr("y1", "0%").attr("x2", "100%").attr("y2", "0%");
 		gradG.append("rect").attr("width", size.width).attr("height", size.gradHeight).style("fill", `url(#${gradientId})`);
-		const samples = range(nTicks).map((i) => {
-			const t = i / (nTicks - 1);
-			const value = d0 + t * (d1 - d0);
-			return {
-				offset: t * 100,
-				value,
-				color: scale(value)
-			};
-		});
+		const { normalize, invert } = makeScaleHelpers(scale);
+		const N_GRAD_SAMPLES = 64;
+		for (let i = 0; i <= N_GRAD_SAMPLES; i++) {
+			const t = i / N_GRAD_SAMPLES;
+			const domainVal = invert(t);
+			const col = scale(domainVal);
+			gradient.append("stop").attr("offset", `${t * 100}%`).style("stop-color", col);
+		}
+		const rawTicks = scale.ticks ? scale.ticks(nTicks) : range(nTicks).map((i) => d0 + i / (nTicks - 1) * (d1 - d0));
+		const ticks = [
+			d0,
+			...rawTicks.filter((t) => t > d0 && t < d1),
+			d1
+		];
 		const format = tickFormat(d0, d1, nTicks - 1);
 		ticksG.append("line").attr("x1", 0).attr("x2", size.width).attr("y1", 0).attr("y2", 0).attr("stroke", "black");
-		for (const s of samples) {
-			gradient.append("stop").attr("offset", `${s.offset}%`).style("stop-color", s.color);
-			ticksG.append("line").attr("x1", s.offset / 100 * size.width).attr("x2", s.offset / 100 * size.width).attr("y1", 0).attr("y2", size.ticksHeight * .3).attr("stroke", "black");
-			ticksG.append("text").attr("x", s.offset / 100 * size.width).attr("y", size.ticksHeight * .5).style("dominant-baseline", "hanging").style("text-anchor", "middle").style("font-size", Math.max(7, size.ticksHeight * .9)).text(format(s.value));
+		for (const tickVal of ticks) {
+			const xPos = normalize(tickVal) * size.width;
+			ticksG.append("line").attr("x1", xPos).attr("x2", xPos).attr("y1", 0).attr("y2", size.ticksHeight * .3).attr("stroke", "black");
+			ticksG.append("text").attr("x", xPos).attr("y", size.ticksHeight * .5).style("dominant-baseline", "hanging").style("text-anchor", "middle").style("font-size", Math.max(7, size.ticksHeight * .9)).text(format(tickVal));
 		}
 	}
 	renderDiscreteScale(scale, gradG, ticksG, size, d0, d1, nTicks) {

@@ -1,8 +1,10 @@
-import {extent, scaleSequential, ScaleSequential, ScaleLinear, ScaleSymLog, ScalePower, ScaleQuantize, ScaleQuantile, ScaleThreshold } from "d3";
+import {extent, scaleSequential, ScaleSequential, ScaleSequentialSymLog, ScaleSequentialPower, ScaleLinear, ScaleSymLog, ScalePower, ScaleQuantize, ScaleQuantile, ScaleThreshold } from "d3";
 import { ControlOptions } from "leaflet";
 
 export type ContinuousScale =
   | ScaleSequential<string>
+  | ScaleSequentialSymLog<string>
+  | ScaleSequentialPower<string>
   | ScaleLinear<string, any>
   | ScaleSymLog<string, any>
   | ScalePower<string, any>;

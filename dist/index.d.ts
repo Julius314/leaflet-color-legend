@@ -1,8 +1,8 @@
-import { ScaleLinear, ScalePower, ScaleQuantile, ScaleQuantize, ScaleSequential, ScaleSymLog, ScaleThreshold, Selection } from "d3";
+import { ScaleLinear, ScalePower, ScaleQuantile, ScaleQuantize, ScaleSequential, ScaleSequentialPower, ScaleSequentialSymLog, ScaleSymLog, ScaleThreshold, Selection } from "d3";
 import { Control, ControlOptions, Map } from "leaflet";
 
 //#region dist/.tsdown-types-es/legend/base.d.ts
-type ContinuousScale = ScaleSequential<string> | ScaleLinear<string, any> | ScaleSymLog<string, any> | ScalePower<string, any>;
+type ContinuousScale = ScaleSequential<string> | ScaleSequentialSymLog<string> | ScaleSequentialPower<string> | ScaleLinear<string, any> | ScaleSymLog<string, any> | ScalePower<string, any>;
 type DiscreteScale = ScaleQuantize<string> | ScaleQuantile<string> | ScaleThreshold<number, string>;
 type SupportedScale = ContinuousScale | DiscreteScale;
 interface LegendOptions extends ControlOptions {
