@@ -24,51 +24,134 @@ import * as L   from 'leaflet';
 import * as d3  from 'd3';
 import { LeafletLegend } from '/dist/index.js';
 
+const legends = [
+  {
+    label: "sequential",
+    scale: d3.scaleSequential([0,1]).interpolator(d3.interpolatePlasma),
+    layerG: new L.LayerGroup(),
+    legend: null
+  }, {
+    label: "sequentialLog",
+    scale: d3.scaleSequentialSymlog([0,1]).interpolator(d3.interpolatePlasma),
+    layerG: new L.LayerGroup(),
+    legend: null
+  }, {
+    label: "sequentialSqrt",
+    scale: d3.scaleSequentialSqrt([0,1]).interpolator(d3.interpolatePlasma),
+    layerG: new L.LayerGroup(),
+    legend: null
+  },
+  {
+    label: "sequentialQuantile",
+    scale: d3.scaleSequentialQuantile([0,1]).interpolator(d3.interpolatePlasma),
+    layerG: new L.LayerGroup(),
+    legend: null
+  },
+  {
+    label: "linear",
+    scale: d3.scaleLinear([0,1], ['white', 'blue']),
+    layerG: new L.LayerGroup(),
+    legend: null
+  }, {
+    label: "log",
+    scale: d3.scaleSymlog([0,1], ['white', 'blue']),
+    layerG: new L.LayerGroup(),
+    legend: null
+  }, {
+    label: "sqrt",
+    scale: d3.scaleSqrt([0,1], ['white', 'blue']),
+    layerG: new L.LayerGroup(),
+    legend: null
+  }, {
+    label: "quantile",
+    scale: d3.scaleQuantile([0,1], d3.schemeBlues[8]),
+    layerG: new L.LayerGroup(),
+    legend: null
+  }
+]
+
 const map = L.map("map").setView([37.8, -96], 4);
 
+map.on("baselayerchange", (event) => {
+  legends.forEach(l =>
+    l.legend.remove()
+  )
+  const leg = legends.find(l => l.label === event.name)
+  leg.legend.addTo(map)
+});
 
 L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
   attribution: '&copy; OpenStreetMap &copy; CARTO',
   maxZoom: 19
 }).addTo(map);
+
+L.control.layers(legends.reduce((prev, cur) => ({...prev, [cur.label]: cur.layerG}), {}), {}, {
+  position: 'topright'
+}).addTo(map);
+
+
 // Fetch US states GeoJSON
 fetch("https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geojson/us-states.json")
   .then(res => res.json())
   .then(data => {
     // Color based on a simple numeric property
     const values = data.features.map((d) => d.properties.density || 0);
-    const colorScale = d3.scaleSequential()
-      .interpolator(d3.interpolatePlasma)
-      .domain([d3.quantile(values, 0.1), d3.quantile(values, 0.9)])
-      .clamp(true);
+    const ext = d3.extent(values)
 
-    L.geoJSON(data, {
-      style: (feature) => ({
-        fillColor: colorScale(feature.properties.density),
-        weight: 1,
-        opacity: 1,
-        color: "white",
-        fillOpacity: 0.7
-      }),
+    const colorScale = d3.scaleSymlog(ext, ["white", "blue"])
+
+    legends.forEach(l => {
+      l.scale.domain(ext)
+      console.log("layb", l)
+      l.legend = new LeafletLegend(l.scale, {
+        position: "topright",
+        label: l.label,
+      })
+      drawPolygons(data, l)
+    })
+
+    legends[0].layerG.addTo(map)
+    legends[0].legend.addTo(map)
+  });
+
+
+  const drawPolygons = (data, legend) => {
+    if(!map) return;
+
+    const layer = legend.layerG
+    const scale = legend.scale
+    layer.clearLayers();
+
+    const polys = L.geoJSON(data, {
+      style: (feature) => {
+        var fillColor = "white"
+        if(feature.properties){
+          const value = feature.properties.density ?? 0;
+          fillColor = scale(value);
+        }
+        return {
+          stroke: true,
+          color: "gray",
+          fillOpacity: 1,
+          opacity: .5,
+          fillColor: fillColor
+        }
+      },
       onEachFeature: (feature, layer) => {
-        layer.on("mouseover", () => {
-          legend.setValue({ val: feature.properties.density, label: feature.properties.name });
+        layer.on('mouseover', () => {
+          legend.legend.setValue({ val: feature.properties.density, label: feature.properties.name })
+
           layer.setStyle({color: "black", weight: 4 });
           layer.bringToFront();
-        });
-        layer.on("mouseout", () => {
-          legend.setValue(null);
-          layer.setStyle({ color: "white", weight: 2 });
-        });
-      }
-    }).addTo(map);
+        })
+        layer.on('mouseout', () => {
+          legend.legend.setValue(null)
 
-    const legend = new LeafletLegend(colorScale, {
-      position: "topright",
-      label: "Population density"
-    });
-    legend.addTo(map);
-  });
+          layer.setStyle({color: "gray", weight: 1 });
+        })
+      }
+    }).addTo(layer)
+  }
 
 </script>
 
@@ -77,7 +160,6 @@ fetch("https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geo
 (function () {
   const es = new EventSource('/__reload');
   es.addEventListener('reload', () => {
-    //document.getElementById('reload-badge').classList.add('show');
     setTimeout(() => location.reload(), 200);
   });
   es.onerror = () => es.close();
